@@ -1,5 +1,18 @@
 # flutter_login_app1
 
+## Online database setup
+
+The app keeps its UI unchanged and uses Supabase for shared players, scores,
+and country visit reports. Run `supabase_schema.sql` in the Supabase SQL Editor,
+then add these repository secrets under **Settings > Secrets and variables >
+Actions**:
+
+- `SUPABASE_URL`: the Supabase project URL
+- `SUPABASE_ANON_KEY`: the public anon key from the Supabase API settings
+
+After pushing to `main`, the GitHub Actions workflow builds the Flutter web app
+with those values and publishes it to GitHub Pages.
+
 A new Flutter project.
 
 ## Getting Started

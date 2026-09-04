@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'cloud_database.dart';
+
 class PlayerData {
   final String name;
   final int? reflexScore;
@@ -50,6 +52,10 @@ class PlayerProfileStore {
   static const _key = 'player_data_db';
 
   static Future<List<PlayerData>> loadData() async {
+    if (CloudDatabase.isConfigured) {
+      final rows = await CloudDatabase.select('players');
+      return rows.map(_fromCloud).toList();
+    }
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key);
     if (raw == null) return [];
@@ -82,7 +88,15 @@ class PlayerProfileStore {
     } else {
       data.add(PlayerData(name: name, createdAt: now, updatedAt: now));
     }
-    await _saveData(data);
+    if (CloudDatabase.isConfigured) {
+      await CloudDatabase.upsert(
+        'players',
+        data[existingIndex >= 0 ? existingIndex : data.length - 1].toCloud(),
+        onConflict: 'name',
+      );
+    } else {
+      await _saveData(data);
+    }
   }
 
   static Future<void> saveReflexScore({
@@ -106,7 +120,15 @@ class PlayerProfileStore {
       createdAt: player.createdAt,
       updatedAt: DateTime.now(),
     );
-    await _saveData(data);
+    if (CloudDatabase.isConfigured) {
+      await CloudDatabase.upsert(
+        'players',
+        data[index].toCloud(),
+        onConflict: 'name',
+      );
+    } else {
+      await _saveData(data);
+    }
   }
 
   static Future<void> saveAimScore({
@@ -132,7 +154,15 @@ class PlayerProfileStore {
       createdAt: player.createdAt,
       updatedAt: DateTime.now(),
     );
-    await _saveData(data);
+    if (CloudDatabase.isConfigured) {
+      await CloudDatabase.upsert(
+        'players',
+        data[index].toCloud(),
+        onConflict: 'name',
+      );
+    } else {
+      await _saveData(data);
+    }
   }
 
   static Future<List<PlayerData>> _ensurePlayer(String name) async {
@@ -154,4 +184,28 @@ class PlayerProfileStore {
       jsonEncode(data.map((player) => player.toJson()).toList()),
     );
   }
+
+  static PlayerData _fromCloud(Map<String, dynamic> row) => PlayerData(
+    name: row['name'] as String,
+    reflexScore: (row['reflex_score'] as num?)?.toInt(),
+    aimSpeed: (row['aim_speed'] as num?)?.toDouble(),
+    aimHits: (row['aim_hits'] as num?)?.toInt() ?? 0,
+    aimTotalTime: (row['aim_total_time'] as num?)?.toInt() ?? 0,
+    aimAccuracy: (row['aim_accuracy'] as num?)?.toDouble(),
+    createdAt: DateTime.parse(row['created_at'] as String),
+    updatedAt: DateTime.parse(row['updated_at'] as String),
+  );
+}
+
+extension on PlayerData {
+  Map<String, dynamic> toCloud() => {
+    'name': name,
+    'reflex_score': reflexScore,
+    'aim_speed': aimSpeed,
+    'aim_hits': aimHits,
+    'aim_total_time': aimTotalTime,
+    'aim_accuracy': aimAccuracy,
+    'created_at': createdAt.toIso8601String(),
+    'updated_at': updatedAt.toIso8601String(),
+  };
 }

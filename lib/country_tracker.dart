@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'cloud_database.dart';
 import 'data_player.dart';
 
 class CountryVisit {
@@ -124,6 +125,18 @@ class CountryTracker {
     final visit = await detectCurrentLocation(playerName: playerName);
     if (visit == null) return;
 
+    if (CloudDatabase.isConfigured) {
+      await CloudDatabase.insert('country_visits', {
+        'player_name': visit.playerName,
+        'ip_address': visit.ipAddress,
+        'country_code': visit.countryCode,
+        'country_name': visit.countryName,
+        'is_domestic': visit.isDomestic,
+        'created_at': visit.createdAt.toIso8601String(),
+      });
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final history = await loadVisits();
     history.add(visit);
@@ -134,6 +147,11 @@ class CountryTracker {
   }
 
   static Future<List<CountryVisit>> loadVisits() async {
+    if (CloudDatabase.isConfigured) {
+      final rows = await CloudDatabase.select('country_visits');
+      return rows.map(_fromCloud).toList();
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_storageKey);
     if (raw == null || raw.isEmpty) return [];
@@ -146,6 +164,17 @@ class CountryTracker {
         .map((item) => CountryVisit.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
+
+  static CountryVisit _fromCloud(Map<String, dynamic> row) => CountryVisit(
+    playerName: (row['player_name'] ?? 'Unknown').toString(),
+    ipAddress: (row['ip_address'] ?? 'unknown').toString(),
+    countryCode: (row['country_code'] ?? '').toString().toUpperCase(),
+    countryName: (row['country_name'] ?? 'Unknown').toString(),
+    isDomestic: row['is_domestic'] == true,
+    createdAt:
+        DateTime.tryParse(row['created_at']?.toString() ?? '') ??
+        DateTime.now(),
+  );
 
   static Future<CountryVisit?> detectCurrentLocation({
     required String playerName,
