@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'animated_backdrop.dart';
 import 'data_player.dart';
+import 'login_screen.dart';
 import 'scoreboard_screen.dart';
 
 enum ReflexState { idle, waiting, action, result }
@@ -21,7 +22,7 @@ class ReflexTestScreen extends StatefulWidget {
 }
 
 class _ReflexTestScreenState extends State<ReflexTestScreen> {
-  static const _totalRounds = 4;
+  static const _totalRounds = 3;
 
   ReflexState _state = ReflexState.idle;
   final List<int> _times = [];
@@ -72,7 +73,7 @@ class _ReflexTestScreenState extends State<ReflexTestScreen> {
       final sorted = [..._times]..sort();
       await PlayerProfileStore.saveReflexScore(
         name: widget.playerName,
-        score: (sorted[1] + sorted[2]) ~/ 2,
+        score: sorted[1],
       );
     }
   }
@@ -97,9 +98,7 @@ class _ReflexTestScreenState extends State<ReflexTestScreen> {
     final isWaiting = _state == ReflexState.waiting;
     final isAction = _state == ReflexState.action;
     final sorted = [..._times]..sort();
-    final median = sorted.length == _totalRounds
-        ? (sorted[1] + sorted[2]) ~/ 2
-        : null;
+    final median = sorted.length == _totalRounds ? sorted[1] : null;
     return Scaffold(
       appBar: AppBar(
         title: Text('รอบ $_round / $_totalRounds'),
@@ -270,9 +269,9 @@ class _ReflexTestScreenState extends State<ReflexTestScreen> {
       ),
       const SizedBox(height: 12),
       OutlinedButton.icon(
-        onPressed: () => Navigator.pushNamedAndRemoveUntil(
+        onPressed: () => Navigator.pushAndRemoveUntil(
           context,
-          '/login',
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
           (route) => false,
         ),
         icon: const Icon(Icons.login_rounded),

@@ -270,8 +270,9 @@ class CountryTracker {
   }
 
   static Future<List<ModeBestScore>> modeLeaders(
-    List<CountryVisit> visits,
-  ) async {
+    List<CountryVisit> visits, {
+    required bool aimTrainer,
+  }) async {
     final players = await PlayerProfileStore.loadData();
     final latestCountryByPlayer = <String, String>{};
 
@@ -282,44 +283,41 @@ class CountryTracker {
       latestCountryByPlayer[playerName] = visit.countryName;
     }
 
-    final reflexPlayers = players
-        .where((player) => player.reflexScore != null)
-        .toList();
-    final aimPlayers = players
-        .where((player) => player.aimSpeed != null)
+    final modePlayers = players
+        .where(
+          (player) =>
+              latestCountryByPlayer.containsKey(player.name) &&
+              (aimTrainer
+                  ? player.aimSpeed != null
+                  : player.reflexScore != null),
+        )
         .toList();
 
-    ModeBestScore? bestReflex;
-    for (final player in reflexPlayers) {
+    final leaders = <ModeBestScore>[];
+    for (final player in modePlayers) {
       final country = latestCountryByPlayer[player.name] ?? 'Unknown';
-      final scoreValue = player.reflexScore!.toDouble();
-      if (bestReflex == null || scoreValue < bestReflex.scoreValue) {
-        bestReflex = ModeBestScore(
-          modeName: 'Time Reflex',
+      final scoreValue = aimTrainer
+          ? player.aimSpeed!
+          : player.reflexScore!.toDouble();
+      leaders.add(
+        ModeBestScore(
+          modeName: aimTrainer ? 'Aim Trainer' : 'Time Reflex Test',
           playerName: player.name,
           countryName: country,
-          scoreLabel: '${scoreValue.toStringAsFixed(0)} ms',
+          scoreLabel: aimTrainer
+              ? '${scoreValue.toStringAsFixed(2)} targets/s'
+              : '${scoreValue.toStringAsFixed(0)} ms',
           scoreValue: scoreValue,
-        );
-      }
+        ),
+      );
     }
 
-    ModeBestScore? bestAim;
-    for (final player in aimPlayers) {
-      final country = latestCountryByPlayer[player.name] ?? 'Unknown';
-      final scoreValue = player.aimSpeed!;
-      if (bestAim == null || scoreValue > bestAim.scoreValue) {
-        bestAim = ModeBestScore(
-          modeName: 'Aim Trainer',
-          playerName: player.name,
-          countryName: country,
-          scoreLabel: '${scoreValue.toStringAsFixed(2)} targets/s',
-          scoreValue: scoreValue,
-        );
-      }
-    }
-
-    return [?bestReflex, ?bestAim];
+    leaders.sort(
+      (a, b) => aimTrainer
+          ? b.scoreValue.compareTo(a.scoreValue)
+          : a.scoreValue.compareTo(b.scoreValue),
+    );
+    return leaders;
   }
 
   static List<PlayerCountryStat> playerCountries(List<CountryVisit> visits) {

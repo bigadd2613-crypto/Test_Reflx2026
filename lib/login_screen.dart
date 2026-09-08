@@ -22,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _nameController = TextEditingController();
   bool _loading = false;
 
+  // ตรวจสอบชื่อผู้เล่น บันทึกข้อมูล และเปิดหน้าเลือกโหมดการทดสอบ
   Future<void> _start() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
@@ -60,10 +61,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    // คืนทรัพยากรของช่องกรอกชื่อเมื่อออกจากหน้านี้
     _nameController.dispose();
     super.dispose();
   }
 
+  // สร้างหน้าแรกสำหรับกรอกชื่อและเลือกดูข้อมูลต่าง ๆ
   @override
   Widget build(BuildContext context) => Scaffold(
     body: AnimatedBackdrop(
@@ -111,6 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
+                  // ปุ่มเริ่มทดสอบ: ตรวจสอบชื่อและไปหน้าเลือกโหมด
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -132,6 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  // ปุ่มดู Scoreboard: เปิดหน้าคะแนนรวมของผู้เล่นทั้งหมด
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -147,6 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  // ปุ่มดูสถิติประเทศ: เปิดรายงานผู้เล่นในประเทศและต่างประเทศ
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -162,13 +168,49 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 28),
-                  const Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 8,
-                    runSpacing: 4,
+                  // คำอธิบายกติกาของแต่ละโหมด พร้อมไอคอนแยกกัน
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.timer_outlined, size: 18, color: Colors.white),
-                      Text('3 รอบ • ใช้ค่ามัธยฐานเป็นคะแนนสุดท้าย'),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(top: 2),
+                            child: Icon(
+                              Icons.timer_outlined,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Time Reflex Test: กด 3 รอบ • ใช้ค่าคะแนนตรงกลางที่สุดเป็นผลลัพธ์',
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(top: 2),
+                            child: Icon(
+                              Icons.ads_click_rounded,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Aim Trainer: ยิงเป้าเป็นเวลา 30 วินาที • ใช้ค่าคะแนนสูงสุดเป็นผลลัพธ์',
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ],

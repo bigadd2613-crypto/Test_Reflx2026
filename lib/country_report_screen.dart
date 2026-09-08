@@ -15,6 +15,7 @@ class CountryReportScreen extends StatefulWidget {
 
 class _CountryReportScreenState extends State<CountryReportScreen> {
   late Future<List<CountryVisit>> _visitsFuture;
+  bool _showAimTrainer = false;
 
   @override
   void initState() {
@@ -134,6 +135,25 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
                           ),
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+                        child: SegmentedButton<bool>(
+                          segments: const [
+                            ButtonSegment<bool>(
+                              value: false,
+                              label: Text('Time Reflex Test'),
+                            ),
+                            ButtonSegment<bool>(
+                              value: true,
+                              label: Text('Aim Trainer'),
+                            ),
+                          ],
+                          selected: {_showAimTrainer},
+                          onSelectionChanged: (selection) {
+                            setState(() => _showAimTrainer = selection.first);
+                          },
+                        ),
+                      ),
                       Expanded(
                         child: FutureBuilder<List<CountryVisit>>(
                           future: _visitsFuture,
@@ -200,8 +220,6 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
     }
 
     final summary = CountryTracker.summary(visits);
-    final modeLeaders = CountryTracker.modeLeaders(visits);
-
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -227,91 +245,89 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        _panelTitle('ผู้เล่นที่ทำคะแนนได้มากที่สุด'),
+        _panelTitle(
+          _showAimTrainer ? 'Top 10 Aim Trainer' : 'Top 10 Time Reflex Test',
+        ),
         FutureBuilder<List<ModeBestScore>>(
-          future: modeLeaders,
+          future: CountryTracker.modeLeaders(
+            visits,
+            aimTrainer: _showAimTrainer,
+          ),
           builder: (context, modeSnapshot) {
             if (!modeSnapshot.hasData) {
               return const SizedBox.shrink();
             }
 
             final leaders = modeSnapshot.data!;
-            final currentLeader = leaders.isEmpty ? null : leaders.first;
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1C232B),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white.withValues(alpha: .06)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (currentLeader == null)
-                    const Text(
-                      'ยังไม่มีข้อมูลคะแนนในโหมดนี้',
-                      style: TextStyle(color: Colors.white70),
-                    )
-                  else ...[
-                    Text(
-                      currentLeader.playerName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
+            if (leaders.isEmpty) {
+              return const Text(
+                'ยังไม่มีข้อมูลคะแนนของโหมดนี้',
+                style: TextStyle(color: Colors.white70),
+              );
+            }
+
+            return Column(
+              children: leaders.take(10).toList().asMap().entries.map((entry) {
+                final leader = entry.value;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C232B),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: .06),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: const Color(0xFF2B3541),
+                        child: Text(
+                          '#${entry.key + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${currentLeader.countryName} • ${currentLeader.scoreLabel}',
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                  ],
-                ],
-              ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              leader.playerName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              leader.countryName,
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        leader.scoreLabel,
+                        textAlign: TextAlign.end,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             );
           },
-        ),
-        const SizedBox(height: 16),
-        _panelTitle('Top 3 ผู้เล่น'),
-        ...CountryTracker.topPlayers(visits, limit: 3).map(
-          (player) => Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C232B),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: .06)),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: const Color(0xFF2B3541),
-                child: Text(
-                  '#${player.rank}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              title: Text(
-                player.playerName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: Text(
-                '${player.countryName} • ${player.count} ครั้ง',
-                style: const TextStyle(color: Colors.white70),
-              ),
-              trailing: const Icon(
-                Icons.emoji_events_rounded,
-                color: Colors.white70,
-              ),
-            ),
-          ),
         ),
       ],
     );
