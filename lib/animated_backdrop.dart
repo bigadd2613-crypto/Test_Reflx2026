@@ -1,3 +1,6 @@
+// วิดเจ็ตพื้นหลังลายเส้นเคลื่อนไหวที่ใช้ตกแต่งหลายหน้าจอ
+// ไม่มีปุ่ม UI โดยตรง เพราะทำหน้าที่แสดงผลพื้นหลังให้วิดเจ็ตลูก
+
 import 'package:flutter/material.dart';
 
 class AnimatedBackdrop extends StatefulWidget {

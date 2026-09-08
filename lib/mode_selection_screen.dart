@@ -1,3 +1,7 @@
+// หน้าเลือกโหมดการทดสอบหลังจากผู้เล่นเข้าสู่ระบบ
+// ปุ่มหลัก: เลือก Time Reflex Test/Aim Trainer, เข้าสู่โหมดที่เลือก,
+// ดู Scoreboard และเปลี่ยนผู้เล่น
+
 import 'package:flutter/material.dart';
 
 import 'animated_backdrop.dart';

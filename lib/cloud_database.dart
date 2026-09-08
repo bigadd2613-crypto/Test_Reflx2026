@@ -1,3 +1,6 @@
+// คลาสเชื่อมต่อฐานข้อมูลออนไลน์ผ่าน Supabase REST API
+// ไม่มีปุ่ม UI โดยตรง เพราะทำหน้าที่อ่านและบันทึกข้อมูลให้หน้าจอต่าง ๆ
+
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;

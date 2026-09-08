@@ -1,3 +1,6 @@
+// หน้าจอเกม Time Reflex Test สำหรับวัดเวลาตอบสนองของผู้เล่น
+// ปุ่มหลัก: เริ่มเกม, ทำซ้ำอีกรอบ, ไปหน้า Scoreboard และกลับหน้า Login
+
 import 'dart:async';
 import 'dart:math';
 
@@ -18,13 +21,15 @@ class ReflexTestScreen extends StatefulWidget {
 }
 
 class _ReflexTestScreenState extends State<ReflexTestScreen> {
+  static const _totalRounds = 4;
+
   ReflexState _state = ReflexState.idle;
   final List<int> _times = [];
   Timer? _timer;
   DateTime? _startTime;
   String _notice = '';
 
-  int get _round => _times.length + 1;
+  int get _round => min(_times.length + 1, _totalRounds);
 
   void _beginRound() {
     _timer?.cancel();
@@ -56,16 +61,18 @@ class _ReflexTestScreenState extends State<ReflexTestScreen> {
     final elapsed = DateTime.now().difference(_startTime!).inMilliseconds;
     setState(() {
       _times.add(elapsed);
-      _state = _times.length == 3 ? ReflexState.result : ReflexState.idle;
-      _notice = _times.length == 3
-          ? 'ครบ 3 รอบแล้ว'
+      _state = _times.length == _totalRounds
+          ? ReflexState.result
+          : ReflexState.idle;
+      _notice = _times.length == _totalRounds
+          ? 'ครบ $_totalRounds รอบแล้ว'
           : 'รอบต่อไปพร้อมเมื่อไหร่กดปุ่มได้เลย';
     });
-    if (_times.length == 3) {
+    if (_times.length == _totalRounds) {
       final sorted = [..._times]..sort();
       await PlayerProfileStore.saveReflexScore(
         name: widget.playerName,
-        score: sorted[1],
+        score: (sorted[1] + sorted[2]) ~/ 2,
       );
     }
   }
@@ -90,10 +97,12 @@ class _ReflexTestScreenState extends State<ReflexTestScreen> {
     final isWaiting = _state == ReflexState.waiting;
     final isAction = _state == ReflexState.action;
     final sorted = [..._times]..sort();
-    final median = sorted.length == 3 ? sorted[1] : null;
+    final median = sorted.length == _totalRounds
+        ? (sorted[1] + sorted[2]) ~/ 2
+        : null;
     return Scaffold(
       appBar: AppBar(
-        title: Text('รอบ $_round / 3'),
+        title: Text('รอบ $_round / $_totalRounds'),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
@@ -204,7 +213,7 @@ class _ReflexTestScreenState extends State<ReflexTestScreen> {
       ),
       const SizedBox(height: 8),
       Text(
-        'ค่ามัธยฐานของ 3 รอบคือ',
+        'ค่ามัธยฐานของ $_totalRounds รอบคือ',
         style: TextStyle(color: Colors.white.withValues(alpha: .65)),
       ),
       const SizedBox(height: 18),

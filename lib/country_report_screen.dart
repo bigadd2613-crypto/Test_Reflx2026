@@ -1,3 +1,6 @@
+// หน้ารายงานสถิติผู้เล่นและประเทศที่เข้าใช้งานแอป
+// ปุ่มหลัก: กลับไปหน้าก่อนหน้า และรีเฟรชข้อมูลสถิติ
+
 import 'package:flutter/material.dart';
 
 import 'animated_backdrop.dart';
@@ -197,8 +200,6 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
     }
 
     final summary = CountryTracker.summary(visits);
-    final topCountries = CountryTracker.topCountries(visits);
-    final playerStats = CountryTracker.playerCountries(visits);
     final modeLeaders = CountryTracker.modeLeaders(visits);
 
     return ListView(
@@ -223,15 +224,10 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
               value: '${summary.uniquePlayers}',
               icon: Icons.person_rounded,
             ),
-            _statCard(
-              label: 'สูงสุด',
-              value: '${summary.topCountry} • ${summary.topCountryCount} คน',
-              icon: Icons.flag_rounded,
-            ),
           ],
         ),
         const SizedBox(height: 16),
-        _panelTitle('โหมดที่มีผู้เล่นสูงสุด'),
+        _panelTitle('ผู้เล่นที่ทำคะแนนได้มากที่สุด'),
         FutureBuilder<List<ModeBestScore>>(
           future: modeLeaders,
           builder: (context, modeSnapshot) {
@@ -253,27 +249,6 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      '/login',
-                      (route) => false,
-                    ),
-                    icon: const Icon(Icons.login_rounded),
-                    label: const Text('กลับไปหน้า Login'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
                   if (currentLeader == null)
                     const Text(
                       'ยังไม่มีข้อมูลคะแนนในโหมดนี้',
@@ -299,47 +274,6 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
             );
           },
         ),
-        const SizedBox(height: 16),
-        _panelTitle('Top Countries'),
-        ...topCountries.asMap().entries.map((entry) {
-          final index = entry.key;
-          final rec = entry.value;
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C232B),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: .06)),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: const Color(0xFF2B3541),
-                child: Text(
-                  '${index + 1}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              title: Text(
-                rec.country,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: Text(
-                '${rec.count} ครั้ง',
-                style: const TextStyle(color: Colors.white70),
-              ),
-              trailing: const Icon(
-                Icons.trending_up_rounded,
-                color: Colors.white70,
-              ),
-            ),
-          );
-        }),
         const SizedBox(height: 16),
         _panelTitle('Top 3 ผู้เล่น'),
         ...CountryTracker.topPlayers(visits, limit: 3).map(
@@ -379,54 +313,6 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        _panelTitle('ผู้เล่น/ประเทศ'),
-        ...playerStats
-            .take(8)
-            .map(
-              (item) => Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1C232B),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.playerName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            item.countryName,
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      '${item.count} ครั้ง',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
       ],
     );
   }

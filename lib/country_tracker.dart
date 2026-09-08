@@ -1,3 +1,6 @@
+// ระบบบันทึกและคำนวณข้อมูลประเทศ สถิติการเข้าใช้งาน และคะแนนผู้เล่น
+// ไม่มีปุ่ม UI โดยตรง เพราะถูกเรียกใช้โดยหน้า Login และ Country Report
+
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;

@@ -1,3 +1,6 @@
+// โมเดลและระบบจัดเก็บคะแนนของ Time Reflex กับ Aim Trainer
+// ไม่มีปุ่ม UI โดยตรง เพราะหน้าจอเกมเป็นผู้เรียกใช้ระบบนี้
+
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';

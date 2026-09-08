@@ -1,4 +1,7 @@
-﻿import 'package:flutter/material.dart';
+﻿// หน้าแสดงคะแนนรวมของผู้เล่น แยกเป็น Time Reflex และ Aim Trainer
+// ปุ่มหลัก: กลับไปหน้าก่อนหน้า และแท็บเลือกประเภทคะแนน
+
+import 'package:flutter/material.dart';
 
 import 'animated_backdrop.dart';
 import 'data_player.dart';

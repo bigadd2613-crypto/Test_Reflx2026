@@ -1,4 +1,7 @@
-﻿import 'package:flutter/material.dart';
+﻿// จุดเริ่มต้นของแอปและการตั้งค่า Theme ของ Flutter
+// แสดงหน้า LoginScreen เป็นหน้าแรก จึงไม่มีปุ่ม UI โดยตรงในไฟล์นี้
+
+import 'package:flutter/material.dart';
 
 import 'login_screen.dart';
 

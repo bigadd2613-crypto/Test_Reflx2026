@@ -1,3 +1,6 @@
+// หน้าจอเกม Aim Trainer สำหรับฝึกกดเป้าให้เร็วและแม่นยำ
+// ปุ่มหลัก: เริ่มเกม, ทำซ้ำอีกรอบ, ไปหน้า Scoreboard และกลับหน้า Login
+
 import 'dart:async';
 import 'dart:math';
 
@@ -5,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'animated_backdrop.dart';
 import 'data_player.dart';
+import 'login_screen.dart';
 import 'reflex_data.dart';
 import 'scoreboard_screen.dart';
 
@@ -396,9 +400,9 @@ class _AimTrainerScreenState extends State<AimTrainerScreen> {
       ),
       const SizedBox(height: 12),
       OutlinedButton.icon(
-        onPressed: () => Navigator.pushNamedAndRemoveUntil(
+        onPressed: () => Navigator.pushAndRemoveUntil(
           context,
-          '/login',
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
           (route) => false,
         ),
         icon: const Icon(Icons.login_rounded),

@@ -1,3 +1,6 @@
+// โมเดลข้อมูลผู้เล่นและระบบบันทึก/โหลดโปรไฟล์ผู้เล่น
+// ไม่มีปุ่ม UI โดยตรง เพราะถูกเรียกใช้โดยหน้า Login และ Scoreboard
+
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';

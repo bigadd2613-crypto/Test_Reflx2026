@@ -1,3 +1,6 @@
+// หน้าแรกสำหรับกรอกชื่อหรือ ID เพื่อเริ่มใช้งานแอป
+// ปุ่มหลัก: เริ่มทดสอบ, ดู Scoreboard ทั้งหมด และดูสถิติประเทศ
+
 import 'package:flutter/material.dart';
 
 import 'animated_backdrop.dart';
