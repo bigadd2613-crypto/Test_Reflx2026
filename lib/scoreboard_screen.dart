@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 
 import 'animated_backdrop.dart';
+import 'country_tracker.dart';
 import 'data_player.dart';
 
 class ScoreboardScreen extends StatefulWidget {
@@ -15,13 +16,48 @@ class ScoreboardScreen extends StatefulWidget {
   State<ScoreboardScreen> createState() => _ScoreboardScreenState();
 }
 
+class _ScoreboardData {
+  final List<PlayerData> players;
+  final Map<String, String> countryByPlayer;
+
+  const _ScoreboardData({required this.players, required this.countryByPlayer});
+
+  String countryFor(String playerName) =>
+      countryByPlayer[playerName.toLowerCase()] ?? 'Unknown';
+}
+
 class _ScoreboardScreenState extends State<ScoreboardScreen> {
-  late Future<List<PlayerData>> _players;
+  static const _maxScoreboardEntries = 100;
+
+  late Future<_ScoreboardData> _scoreboardData;
 
   @override
   void initState() {
     super.initState();
-    _players = PlayerProfileStore.loadData();
+    _scoreboardData = _loadScoreboardData();
+  }
+
+  Future<_ScoreboardData> _loadScoreboardData() async {
+    final results = await Future.wait([
+      PlayerProfileStore.loadData(),
+      CountryTracker.loadVisits(),
+    ]);
+    final players = results[0] as List<PlayerData>;
+    final visits = results[1] as List<CountryVisit>;
+    final countryByPlayer = <String, String>{};
+    final orderedVisits = [...visits]
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    for (final visit in orderedVisits) {
+      final playerKey = visit.playerName.trim().toLowerCase();
+      if (playerKey.isNotEmpty) {
+        countryByPlayer[playerKey] = visit.countryName.trim().isEmpty
+            ? 'Unknown'
+            : visit.countryName.trim();
+      }
+    }
+
+    return _ScoreboardData(players: players, countryByPlayer: countryByPlayer);
   }
 
   @override
@@ -131,19 +167,17 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                         ),
                       ),
                       Expanded(
-                        child: FutureBuilder<List<PlayerData>>(
-                          future: _players,
+                        child: FutureBuilder<_ScoreboardData>(
+                          future: _scoreboardData,
                           builder: (context, snapshot) {
                             if (!snapshot.hasData) {
                               return const Center(
                                 child: CircularProgressIndicator(),
                               );
                             }
+                            final data = snapshot.data!;
                             return TabBarView(
-                              children: [
-                                _reflexBoard(snapshot.data!),
-                                _aimBoard(snapshot.data!),
-                              ],
+                              children: [_reflexBoard(data), _aimBoard(data)],
                             );
                           },
                         ),
@@ -159,49 +193,55 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     );
   }
 
-  Widget _reflexBoard(List<PlayerData> players) {
+  Widget _reflexBoard(_ScoreboardData data) {
+    final players = data.players;
     final entries =
         players.where((player) => player.reflexScore != null).toList()
           ..sort((a, b) => a.reflexScore!.compareTo(b.reflexScore!));
+    final topEntries = entries.take(_maxScoreboardEntries).toList();
 
-    if (entries.isEmpty) {
+    if (topEntries.isEmpty) {
       return _playersWithoutScore(players, 'ยังไม่มีคะแนน Time Reflex');
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
-      itemCount: entries.length,
+      itemCount: topEntries.length,
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
-        final entry = entries[index];
+        final entry = topEntries[index];
         return _entryTile(
           index: index,
           name: entry.name,
           score: '${entry.reflexScore} ms',
+          country: data.countryFor(entry.name),
           isCurrent: _isCurrent(entry.name),
         );
       },
     );
   }
 
-  Widget _aimBoard(List<PlayerData> players) {
+  Widget _aimBoard(_ScoreboardData data) {
+    final players = data.players;
     final entries = players.where((player) => player.aimSpeed != null).toList()
       ..sort((a, b) => b.aimSpeed!.compareTo(a.aimSpeed!));
+    final topEntries = entries.take(_maxScoreboardEntries).toList();
 
-    if (entries.isEmpty) {
+    if (topEntries.isEmpty) {
       return _playersWithoutScore(players, 'ยังไม่มีคะแนน Aim Trainer');
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
-      itemCount: entries.length,
+      itemCount: topEntries.length,
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
-        final entry = entries[index];
+        final entry = topEntries[index];
         return _entryTile(
           index: index,
           name: entry.name,
           score: '${entry.aimSpeed!.toStringAsFixed(2)} targets/s',
+          country: data.countryFor(entry.name),
           detail:
               '${entry.aimAccuracy!.toStringAsFixed(1)}% accuracy • ${entry.aimHits} hits',
           isCurrent: _isCurrent(entry.name),
@@ -260,6 +300,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     required int index,
     required String name,
     required String score,
+    required String country,
     required bool isCurrent,
     String? detail,
   }) => Container(
@@ -300,14 +341,44 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               isCurrent ? '$detail • ผู้เล่นปัจจุบัน' : detail,
               style: const TextStyle(color: Colors.white70),
             ),
-      trailing: Text(
-        score,
+      trailing: RichText(
         textAlign: TextAlign.end,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+        text: TextSpan(
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+          children: [
+            TextSpan(text: '$score  '),
+            ..._countrySpans(country),
+          ],
         ),
       ),
     ),
   );
+
+  List<TextSpan> _countrySpans(String country) {
+    if (country.toLowerCase() != 'thailand') {
+      return [TextSpan(text: country)];
+    }
+
+    const flagColors = [
+      Color(0xFFED1C24),
+      Color(0xFFFFFFFF),
+      Color(0xFFFFFFFF),
+      Color.fromARGB(255, 0, 30, 255),
+      Color.fromARGB(255, 0, 30, 255),
+      Color.fromARGB(255, 0, 30, 255),
+      Color(0xFFFFFFFF),
+      Color(0xFFED1C24),
+    ];
+
+    return [
+      for (var index = 0; index < country.length; index++)
+        TextSpan(
+          text: country[index],
+          style: TextStyle(color: flagColors[index]),
+        ),
+    ];
+  }
 }

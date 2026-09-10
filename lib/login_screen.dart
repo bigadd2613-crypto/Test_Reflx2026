@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'เตรียมนิ้วให้พร้อม กดทันทีที่หน้าจอเปลี่ยนเป็นสีเขียว',
+                    'วัดReflxของคุณว่าวัยรุ่นหรือวัยชรา',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: .68),
                       fontSize: 16,
