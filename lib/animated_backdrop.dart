@@ -4,8 +4,12 @@
 import 'package:flutter/material.dart';
 
 class AnimatedBackdrop extends StatefulWidget {
+  // วิดเจ็ตพื้นหลังแบบ Stateful เพื่อเก็บสถานะและควบคุมแอนิเมชันของพื้นหลัง
+  // หน้าต่าง ๆ เช่น AimTrainerScreen สามารถครอบเนื้อหาของตนเองด้วยวิดเจ็ตนี้ได้
+  // เนื้อหาของหน้าจอผู้เรียก ซึ่งจะแสดงอยู่ด้านหน้าพื้นหลังที่วาดโดยคลาสนี้
   final Widget child;
 
+  // รับเนื้อหาจากหน้าจออื่นและส่งต่อให้แสดงในชั้นบนของพื้นหลัง
   const AnimatedBackdrop({super.key, required this.child});
 
   @override
@@ -14,6 +18,7 @@ class AnimatedBackdrop extends StatefulWidget {
 
 class _AnimatedBackdropState extends State<AnimatedBackdrop>
     with SingleTickerProviderStateMixin {
+  // สร้าง State เพื่อให้วิดเจ็ตควบคุม AnimationController ได้ตลอดอายุการใช้งาน
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 18),
@@ -26,6 +31,7 @@ class _AnimatedBackdropState extends State<AnimatedBackdrop>
   }
 
   @override
+  // สร้างพื้นหลังและวาง child ของหน้าจอผู้เรียกไว้ด้านบน
   Widget build(BuildContext context) => DecoratedBox(
     decoration: const BoxDecoration(
       gradient: LinearGradient(
@@ -34,12 +40,14 @@ class _AnimatedBackdropState extends State<AnimatedBackdrop>
         end: Alignment.bottomRight,
       ),
     ),
+    // วาดไล่สีเข้มเป็นพื้นฐานให้ทุกหน้าที่ใช้ AnimatedBackdrop มีธีมเดียวกัน
     child: AnimatedBuilder(
       animation: _controller,
       builder: (context, child) => CustomPaint(
         painter: _BackdropPainter(_controller.value),
         child: child,
       ),
+      // ใช้ child เดิมเป็นเนื้อหาของหน้าจอ เช่น เกม Aim Trainer หรือหน้าอื่น
       child: widget.child,
     ),
   );
@@ -48,6 +56,7 @@ class _AnimatedBackdropState extends State<AnimatedBackdrop>
 class _BackdropPainter extends CustomPainter {
   final double progress;
 
+  // CustomPainter สำหรับวาดเส้นทแยงและแสงเลื่อนบนพื้นหลังด้วย Canvas
   const _BackdropPainter(this.progress);
 
   @override
@@ -75,6 +84,7 @@ class _BackdropPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(lightX, size.height * .28, 240, 2), light);
   }
 
+  // สั่งให้ Flutter วาดพื้นหลังใหม่เฉพาะเมื่อ progress ของแอนิเมชันเปลี่ยน
   @override
   bool shouldRepaint(covariant _BackdropPainter oldDelegate) =>
       oldDelegate.progress != progress;
