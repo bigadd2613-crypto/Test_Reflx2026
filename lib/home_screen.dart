@@ -15,6 +15,8 @@ import 'animated_backdrop.dart';
 import 'data_player.dart';
 // ใช้นำทางกลับไปยังหน้าล็อกอิน
 import 'login_screen.dart';
+// ใช้กลับไปยังหน้าเลือกโหมดการเล่น
+import 'mode_selection_screen.dart';
 // ใช้เปิดหน้าตารางคะแนน
 import 'scoreboard_screen.dart';
 
@@ -339,15 +341,16 @@ class _ReflexTestScreenState extends State<ReflexTestScreen> {
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
-          // เปิดหน้าตารางคะแนนของผู้เล่น
+          // กลับไปหน้าเลือกโหมดโดยใช้ชื่อผู้เล่นเดิม
           onPressed: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => ScoreboardScreen(currentId: widget.playerName),
+              builder: (_) =>
+                  ModeSelectionScreen(playerName: widget.playerName),
             ),
           ),
-          icon: const Icon(Icons.leaderboard_outlined),
-          label: const Text('ไปหน้า Scoreboard'),
+          icon: const Icon(Icons.swap_horiz_rounded),
+          label: const Text('เปลี่ยนโหมดการเล่น'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(

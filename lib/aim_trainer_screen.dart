@@ -15,6 +15,8 @@ import 'animated_backdrop.dart';
 import 'data_player.dart';
 // เชื่อมปุ่มกลับไปยังหน้าล็อกอิน
 import 'login_screen.dart';
+// ใช้กลับไปยังหน้าเลือกโหมดการเล่น
+import 'mode_selection_screen.dart';
 // ใช้คลาส AimStats สำหรับคำนวณความเร็วและความแม่นยำ
 import 'reflex_data.dart';
 // เชื่อมไปยังหน้าตารางคะแนน
@@ -475,16 +477,16 @@ class _AimTrainerScreenState extends State<AimTrainerScreen> {
         label: const Text('ทำซ้ำอีกรอบ'),
       ),
       const SizedBox(height: 12),
-      // ปุ่มเปิด Scoreboard พร้อมส่งชื่อผู้เล่นปัจจุบันไปค้นหา/ไฮไลต์
+      // ปุ่มกลับไปหน้าเลือกโหมดโดยใช้ชื่อผู้เล่นเดิม
       OutlinedButton.icon(
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ScoreboardScreen(currentId: widget.playerName),
+            builder: (_) => ModeSelectionScreen(playerName: widget.playerName),
           ),
         ),
-        icon: const Icon(Icons.leaderboard_outlined),
-        label: const Text('ไปหน้า Scoreboard'),
+        icon: const Icon(Icons.swap_horiz_rounded),
+        label: const Text('เปลี่ยนโหมดการเล่น'),
       ),
       const SizedBox(height: 12),
       // ปุ่มล้างเส้นทางเดิมและกลับไปเริ่มต้นที่หน้า Login
