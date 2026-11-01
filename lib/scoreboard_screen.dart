@@ -1,4 +1,4 @@
-﻿// หน้าแสดงคะแนนรวมของผู้เล่น แยกเป็น Time Reflex และ Aim Trainer
+// หน้าแสดงคะแนนรวมของผู้เล่นทั้งสามโหมดเกม
 // ปุ่มหลัก: กลับไปหน้าก่อนหน้า และแท็บเลือกประเภทคะแนน
 
 // ใช้สร้างหน้าจอ แท็บ รายการคะแนน และการนำทางของ Flutter
@@ -11,7 +11,7 @@ import 'country_tracker.dart';
 // ใช้โหลดข้อมูลโปรไฟล์และคะแนนของผู้เล่น
 import 'data_player.dart';
 
-// หน้าจอแสดงอันดับคะแนนของทั้งสองเกม
+// หน้าจอแสดงอันดับคะแนนของทุกเกม
 class ScoreboardScreen extends StatefulWidget {
   // ID ผู้เล่นปัจจุบันที่ใช้ไฮไลต์ในรายการคะแนน
   final String currentId;
@@ -86,7 +86,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         // กำหนดสีพื้นฐานให้หน้าตารางคะแนน
         backgroundColor: const Color(0xFF101419),
@@ -179,7 +179,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                             ),
                           ),
                           child: const TabBar(
-                            // แท็บสำหรับสลับระหว่างคะแนนสองโหมด
+                            // แท็บสำหรับสลับระหว่างคะแนนทั้งสามโหมด
                             indicatorSize: TabBarIndicatorSize.tab,
                             indicator: BoxDecoration(
                               color: Color(0xFF2B3440),
@@ -194,6 +194,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                             tabs: [
                               Tab(text: 'Time Reflex'),
                               Tab(text: 'Aim Trainer'),
+                              Tab(text: 'Color Wheel Reflex'),
                             ],
                           ),
                         ),
@@ -213,7 +214,11 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                             // ใช้ข้อมูลที่โหลดเสร็จสร้าง TabBarView ของแต่ละเกม
                             final data = snapshot.data!;
                             return TabBarView(
-                              children: [_reflexBoard(data), _aimBoard(data)],
+                              children: [
+                                _reflexBoard(data),
+                                _aimBoard(data),
+                                _colorWheelBoard(data),
+                              ],
                             );
                           },
                         ),
@@ -291,6 +296,35 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           country: data.countryFor(entry.name),
           detail:
               '${entry.aimAccuracy!.toStringAsFixed(1)}% accuracy • ${entry.aimHits} hits',
+          isCurrent: _isCurrent(entry.name),
+        );
+      },
+    );
+  }
+
+  Widget _colorWheelBoard(_ScoreboardData data) {
+    final players = data.players;
+    final entries =
+        players.where((player) => player.colorWheelScore != null).toList()
+          ..sort((a, b) => b.colorWheelScore!.compareTo(a.colorWheelScore!));
+    final topEntries = entries.take(_maxScoreboardEntries).toList();
+
+    if (topEntries.isEmpty) {
+      return _playersWithoutScore(players, 'ยังไม่มีคะแนน Color Wheel Reflex');
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: topEntries.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final entry = topEntries[index];
+        return _entryTile(
+          index: index,
+          name: entry.name,
+          score: '${entry.colorWheelScore} แต้ม',
+          country: data.countryFor(entry.name),
+          detail: 'ผ่านถึงด่าน ${entry.colorWheelStage}',
           isCurrent: _isCurrent(entry.name),
         );
       },

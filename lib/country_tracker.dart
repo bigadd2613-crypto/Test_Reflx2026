@@ -110,6 +110,7 @@ class ModeBestScore {
   final String playerName;
   final String countryName;
   final String scoreLabel;
+  final String? detailLabel;
   final double scoreValue;
 
   const ModeBestScore({
@@ -117,6 +118,7 @@ class ModeBestScore {
     required this.playerName,
     required this.countryName,
     required this.scoreLabel,
+    this.detailLabel,
     required this.scoreValue,
   });
 }
@@ -326,7 +328,8 @@ class CountryTracker {
   // ค้นหาผู้เล่นที่มีคะแนนดีที่สุดของโหมด Aim Trainer หรือ Time Reflex Test
   static Future<List<ModeBestScore>> modeLeaders(
     List<CountryVisit> visits, {
-    required bool aimTrainer,
+    bool aimTrainer = false,
+    bool colorWheelReflex = false,
   }) async {
     // โหลดคะแนนผู้เล่นจาก PlayerProfileStore
     final players = await PlayerProfileStore.loadData();
@@ -345,7 +348,9 @@ class CountryTracker {
         .where(
           (player) =>
               latestCountryByPlayer.containsKey(player.name) &&
-              (aimTrainer
+              (colorWheelReflex
+                  ? player.colorWheelScore != null
+                  : aimTrainer
                   ? player.aimSpeed != null
                   : player.reflexScore != null),
         )
@@ -355,17 +360,28 @@ class CountryTracker {
     final leaders = <ModeBestScore>[];
     for (final player in modePlayers) {
       final country = latestCountryByPlayer[player.name] ?? 'Unknown';
-      final scoreValue = aimTrainer
+      final scoreValue = colorWheelReflex
+          ? player.colorWheelScore!.toDouble()
+          : aimTrainer
           ? player.aimSpeed!
           : player.reflexScore!.toDouble();
       leaders.add(
         ModeBestScore(
-          modeName: aimTrainer ? 'Aim Trainer' : 'Time Reflex Test',
+          modeName: colorWheelReflex
+              ? 'Color Wheel Reflex'
+              : aimTrainer
+              ? 'Aim Trainer'
+              : 'Time Reflex Test',
           playerName: player.name,
           countryName: country,
-          scoreLabel: aimTrainer
+          scoreLabel: colorWheelReflex
+              ? '${scoreValue.toStringAsFixed(0)} แต้ม'
+              : aimTrainer
               ? '${scoreValue.toStringAsFixed(2)} targets/s'
               : '${scoreValue.toStringAsFixed(0)} ms',
+          detailLabel: colorWheelReflex
+              ? 'ผ่านถึงด่าน ${player.colorWheelStage}'
+              : null,
           scoreValue: scoreValue,
         ),
       );
@@ -374,7 +390,7 @@ class CountryTracker {
     // Aim Trainer ยิ่งเร็ว/จำนวนเป้าต่อวินาทีมากยิ่งดี
     // Time Reflex Test ใช้เวลาน้อยกว่ายิ่งดี
     leaders.sort(
-      (a, b) => aimTrainer
+      (a, b) => aimTrainer || colorWheelReflex
           ? b.scoreValue.compareTo(a.scoreValue)
           : a.scoreValue.compareTo(b.scoreValue),
     );

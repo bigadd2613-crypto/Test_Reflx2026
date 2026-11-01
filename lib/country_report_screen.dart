@@ -23,8 +23,8 @@ class CountryReportScreen extends StatefulWidget {
 class _CountryReportScreenState extends State<CountryReportScreen> {
   // Future ของข้อมูลการเข้าใช้งาน ใช้เป็นแหล่งข้อมูลให้ FutureBuilder แสดงผลตามสถานะ
   late Future<List<CountryVisit>> _visitsFuture;
-  // false แสดงคะแนน Time Reflex Test และ true แสดงคะแนน Aim Trainer
-  bool _showAimTrainer = false;
+  // 0 แสดง Time Reflex, 1 แสดง Aim Trainer, 2 แสดง Color Wheel Reflex
+  int _selectedScoreMode = 0;
 
   // เรียกครั้งเดียวเมื่อหน้าจอถูกสร้างขึ้น แล้วเริ่มโหลดข้อมูลการเข้าใช้งาน
   @override
@@ -163,22 +163,28 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
                       Padding(
                         // วางตัวเลือกโหมดเกมไว้ใต้แท็บประเทศ
                         padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
-                        child: SegmentedButton<bool>(
-                          // กำหนดตัวเลือกโหมด Time Reflex Test และ Aim Trainer
+                        child: SegmentedButton<int>(
+                          // เลือกโหมดคะแนนที่ใช้แสดงอันดับประเทศ
                           segments: const [
-                            ButtonSegment<bool>(
-                              value: false,
-                              label: Text('Time Reflex Test'),
+                            ButtonSegment<int>(
+                              value: 0,
+                              label: Text('Time Reflex'),
                             ),
-                            ButtonSegment<bool>(
-                              value: true,
+                            ButtonSegment<int>(
+                              value: 1,
                               label: Text('Aim Trainer'),
                             ),
+                            ButtonSegment<int>(
+                              value: 2,
+                              label: Text('Color Wheel'),
+                            ),
                           ],
-                          selected: {_showAimTrainer},
+                          selected: {_selectedScoreMode},
                           // เก็บโหมดที่ผู้ใช้เลือก แล้วสั่งให้หน้าจอแสดงผลใหม่
                           onSelectionChanged: (selection) {
-                            setState(() => _showAimTrainer = selection.first);
+                            setState(
+                              () => _selectedScoreMode = selection.first,
+                            );
                           },
                         ),
                       ),
@@ -286,14 +292,17 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
         ),
         const SizedBox(height: 16),
         // แสดงชื่อรายการอันดับตามโหมดเกมที่เลือก
-        _panelTitle(
-          _showAimTrainer ? 'Top 10 Aim Trainer' : 'Top 10 Time Reflex Test',
-        ),
+        _panelTitle(switch (_selectedScoreMode) {
+          1 => 'Top 10 Aim Trainer',
+          2 => 'Top 10 Color Wheel Reflex',
+          _ => 'Top 10 Time Reflex Test',
+        }),
         // โหลดอันดับคะแนนของโหมดที่เลือกสำหรับข้อมูลประเทศปัจจุบัน
         FutureBuilder<List<ModeBestScore>>(
           future: CountryTracker.modeLeaders(
             visits,
-            aimTrainer: _showAimTrainer,
+            aimTrainer: _selectedScoreMode == 1,
+            colorWheelReflex: _selectedScoreMode == 2,
           ),
           builder: (context, modeSnapshot) {
             // ซ่อนพื้นที่อันดับไว้ก่อนเมื่อข้อมูลยังโหลดไม่เสร็จ
@@ -360,13 +369,24 @@ class _CountryReportScreenState extends State<CountryReportScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        leader.scoreLabel,
-                        textAlign: TextAlign.end,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            leader.scoreLabel,
+                            textAlign: TextAlign.end,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (leader.detailLabel != null)
+                            Text(
+                              leader.detailLabel!,
+                              textAlign: TextAlign.end,
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                        ],
                       ),
                     ],
                   ),

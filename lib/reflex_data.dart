@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ตัวเลือกโหมดเกมที่หน้า ModeSelectionScreen ใช้สร้างหน้าจอที่เลือก
-enum SelectedMode { timeReflex, aimTrainer }
+enum SelectedMode { timeReflex, aimTrainer, colorWheelReflex }
 
 // สถิติระหว่างเล่น Aim Trainer สำหรับคำนวณความแม่นยำและความเร็ว
 class AimStats {
@@ -105,15 +105,15 @@ class ScoreboardStore {
     final index = entries.indexWhere(
       (entry) => entry.id.toLowerCase() == id.toLowerCase(),
     );
-    // เก็บคะแนนที่ใช้เวลาน้อยกว่า เพราะ Time Reflex ค่าน้อยกว่าดีกว่า
-    final entry = ScoreEntry(
-      id: id,
-      name: name,
-      bestScore: index >= 0 && entries[index].bestScore < score
-          ? entries[index].bestScore
-          : score,
-      timestamp: DateTime.now(),
-    );
+    // เก็บข้อมูลเดิมเมื่อคะแนนใหม่ไม่ดีกว่า เพื่อรักษาเวลาที่ทำสถิติสูงสุด
+    final entry = index >= 0 && entries[index].bestScore <= score
+        ? entries[index]
+        : ScoreEntry(
+            id: id,
+            name: name,
+            bestScore: score,
+            timestamp: DateTime.now(),
+          );
     // แทนที่ข้อมูลเดิมหรือเพิ่มผู้เล่นใหม่ลงรายการ
     if (index >= 0) {
       entries[index] = entry;

@@ -24,6 +24,10 @@ class PlayerData {
   final int aimTotalTime;
   // ความแม่นยำของรอบ Aim Trainer ที่ดีที่สุด
   final double? aimAccuracy;
+  // คะแนนสูงสุดของ Color Wheel Reflex
+  final int? colorWheelScore;
+  // ด่านสูงสุดของรอบ Color Wheel Reflex ที่ทำคะแนนสูงสุด
+  final int colorWheelStage;
   // วันเวลาที่สร้างโปรไฟล์
   final DateTime createdAt;
   // วันเวลาที่แก้ไขข้อมูลล่าสุด
@@ -37,6 +41,8 @@ class PlayerData {
     this.aimHits = 0,
     this.aimTotalTime = 0,
     this.aimAccuracy,
+    this.colorWheelScore,
+    this.colorWheelStage = 0,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -49,6 +55,8 @@ class PlayerData {
     aimHits: (json['aimHits'] as num?)?.toInt() ?? 0,
     aimTotalTime: (json['aimTotalTime'] as num?)?.toInt() ?? 0,
     aimAccuracy: (json['aimAccuracy'] as num?)?.toDouble(),
+    colorWheelScore: (json['colorWheelScore'] as num?)?.toInt(),
+    colorWheelStage: (json['colorWheelStage'] as num?)?.toInt() ?? 0,
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.parse(json['updatedAt'] as String),
   );
@@ -61,6 +69,8 @@ class PlayerData {
     'aimHits': aimHits,
     'aimTotalTime': aimTotalTime,
     'aimAccuracy': aimAccuracy,
+    'colorWheelScore': colorWheelScore,
+    'colorWheelStage': colorWheelStage,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };
@@ -115,6 +125,8 @@ class PlayerProfileStore {
         aimHits: data[existingIndex].aimHits,
         aimTotalTime: data[existingIndex].aimTotalTime,
         aimAccuracy: data[existingIndex].aimAccuracy,
+        colorWheelScore: data[existingIndex].colorWheelScore,
+        colorWheelStage: data[existingIndex].colorWheelStage,
         createdAt: data[existingIndex].createdAt,
         updatedAt: now,
       );
@@ -158,6 +170,8 @@ class PlayerProfileStore {
       aimHits: player.aimHits,
       aimTotalTime: player.aimTotalTime,
       aimAccuracy: player.aimAccuracy,
+      colorWheelScore: player.colorWheelScore,
+      colorWheelStage: player.colorWheelStage,
       createdAt: player.createdAt,
       updatedAt: DateTime.now(),
     );
@@ -198,6 +212,8 @@ class PlayerProfileStore {
       aimHits: hits,
       aimTotalTime: totalTime,
       aimAccuracy: accuracy,
+      colorWheelScore: player.colorWheelScore,
+      colorWheelStage: player.colorWheelStage,
       createdAt: player.createdAt,
       updatedAt: DateTime.now(),
     );
@@ -210,6 +226,44 @@ class PlayerProfileStore {
       );
     } else {
       // บันทึกลงเครื่องเมื่อยังไม่ได้เชื่อมต่อ Supabase
+      await _saveData(data);
+    }
+  }
+
+  // บันทึกเฉพาะสถิติ Color Wheel Reflex ที่ดีกว่าสถิติเดิม
+  static Future<void> saveColorWheelScore({
+    required String name,
+    required int score,
+    required int stage,
+  }) async {
+    final data = await _ensurePlayer(name);
+    final index = data.indexWhere(
+      (player) => player.name.toLowerCase() == name.toLowerCase(),
+    );
+    final player = data[index];
+    if (player.colorWheelScore != null && player.colorWheelScore! >= score) {
+      return;
+    }
+
+    data[index] = PlayerData(
+      name: player.name,
+      reflexScore: player.reflexScore,
+      aimSpeed: player.aimSpeed,
+      aimHits: player.aimHits,
+      aimTotalTime: player.aimTotalTime,
+      aimAccuracy: player.aimAccuracy,
+      colorWheelScore: score,
+      colorWheelStage: stage,
+      createdAt: player.createdAt,
+      updatedAt: DateTime.now(),
+    );
+    if (CloudDatabase.isConfigured) {
+      await CloudDatabase.upsert(
+        'players',
+        data[index].toCloud(),
+        onConflict: 'name',
+      );
+    } else {
       await _saveData(data);
     }
   }
@@ -248,6 +302,8 @@ class PlayerProfileStore {
     aimHits: (row['aim_hits'] as num?)?.toInt() ?? 0,
     aimTotalTime: (row['aim_total_time'] as num?)?.toInt() ?? 0,
     aimAccuracy: (row['aim_accuracy'] as num?)?.toDouble(),
+    colorWheelScore: (row['color_wheel_score'] as num?)?.toInt(),
+    colorWheelStage: (row['color_wheel_stage'] as num?)?.toInt() ?? 0,
     createdAt: DateTime.parse(row['created_at'] as String),
     updatedAt: DateTime.parse(row['updated_at'] as String),
   );
@@ -263,6 +319,8 @@ extension on PlayerData {
     'aim_hits': aimHits,
     'aim_total_time': aimTotalTime,
     'aim_accuracy': aimAccuracy,
+    'color_wheel_score': colorWheelScore,
+    'color_wheel_stage': colorWheelStage,
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt.toIso8601String(),
   };

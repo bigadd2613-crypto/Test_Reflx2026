@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'animated_backdrop.dart';
 // ใช้เปิดเกม Aim Trainer เมื่อผู้เล่นเลือกโหมดนี้
 import 'aim_trainer_screen.dart';
+// ใช้เปิดเกม Color Wheel Reflex เมื่อผู้เล่นเลือกโหมดนี้
+import 'color_wheel_reflex_screen.dart';
 // ใช้เปิดเกม Time Reflex Test เมื่อผู้เล่นเลือกโหมดนี้
 import 'home_screen.dart';
 // ใช้ชนิดข้อมูล SelectedMode สำหรับเก็บโหมดที่เลือก
@@ -40,9 +42,17 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
     // หากยังไม่ได้เลือกโหมด จะไม่อนุญาตให้นำทางต่อ
     if (mode == null) return;
     // สร้างหน้าจอเกมที่ตรงกับโหมด และส่งชื่อผู้เล่นไปให้เกม
-    final page = mode == SelectedMode.timeReflex
-        ? ReflexTestScreen(playerName: widget.playerName)
-        : AimTrainerScreen(playerName: widget.playerName);
+    final page = switch (mode) {
+      SelectedMode.timeReflex => ReflexTestScreen(
+        playerName: widget.playerName,
+      ),
+      SelectedMode.aimTrainer => AimTrainerScreen(
+        playerName: widget.playerName,
+      ),
+      SelectedMode.colorWheelReflex => ColorWheelReflexScreen(
+        playerName: widget.playerName,
+      ),
+    };
     // เพิ่มหน้าจอเกมที่เลือกเข้า Navigator stack
     Navigator.push(context, MaterialPageRoute(builder: (_) => page));
   }
@@ -108,6 +118,17 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
                 // เปลี่ยน selectedMode เมื่อผู้เล่นแตะการ์ดนี้
                 onPressed: () =>
                     setState(() => selectedMode = SelectedMode.aimTrainer),
+              ),
+              const SizedBox(height: 16),
+              _ModeCard(
+                icon: Icons.toys_rounded,
+                color: Colors.white,
+                title: 'Color Wheel Reflex',
+                description: 'รอคำสั่งสี แล้วกดให้ตรงกับลูกศรบนวงล้อ',
+                selected: selectedMode == SelectedMode.colorWheelReflex,
+                onPressed: () => setState(
+                  () => selectedMode = SelectedMode.colorWheelReflex,
+                ),
               ),
               const SizedBox(height: 24),
               SizedBox(
