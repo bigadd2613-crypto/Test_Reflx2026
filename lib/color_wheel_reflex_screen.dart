@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'animated_backdrop.dart';
 import 'data_player.dart';
@@ -171,16 +172,31 @@ class _ColorWheelReflexScreenState extends State<ColorWheelReflexScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Color Wheel Reflex')),
-      body: AnimatedBackdrop(
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: _gameState == ColorWheelGameState.gameOver
-                    ? _buildResult()
-                    : _buildGame(),
+      body: Focus(
+        autofocus: true,
+        onKeyEvent: (node, event) {
+          if (event.logicalKey != LogicalKeyboardKey.space ||
+              _gameState == ColorWheelGameState.idle ||
+              _gameState == ColorWheelGameState.gameOver) {
+            return KeyEventResult.ignored;
+          }
+          if (event is KeyDownEvent &&
+              _gameState == ColorWheelGameState.activeReaction) {
+            _stopAndCheck();
+          }
+          return KeyEventResult.handled;
+        },
+        child: AnimatedBackdrop(
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: _gameState == ColorWheelGameState.gameOver
+                      ? _buildResult()
+                      : _buildGame(),
+                ),
               ),
             ),
           ),
@@ -284,7 +300,7 @@ class _ColorWheelReflexScreenState extends State<ColorWheelReflexScreen>
       const SizedBox(height: 12),
       Text(
         _gameState == ColorWheelGameState.activeReaction
-            ? 'กดปุ่มหยุดเพื่อตรวจสอบสีที่ลูกศรชี้'
+            ? 'กดปุ่มหยุดหรือ Spacebar เพื่อตรวจสอบสีที่ลูกศรชี้'
             : 'รอคำสั่งสีสุ่ม 2–3 วินาที แล้วกดหยุดให้ทันก่อนหมดเวลา',
         textAlign: TextAlign.center,
         style: TextStyle(color: Colors.white.withValues(alpha: .7)),
