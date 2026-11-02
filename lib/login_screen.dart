@@ -209,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 28),
                   // คำอธิบายกติกาของแต่ละโหมด พร้อมไอคอนแยกกัน
                   const Column(
-                    // แสดงกติกาโดยย่อของทั้งสองโหมดให้ผู้เล่นเลือกก่อนเริ่ม
+                    // แสดงกติกาโดยย่อของแต่ละโหมดให้ผู้เล่นเลือกก่อนเริ่ม
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
@@ -246,7 +246,27 @@ class _LoginScreenState extends State<LoginScreen> {
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Aim Trainer: ยิงเป้าเป็นเวลา 30 วินาที • ใช้ค่าคะแนนสูงสุดเป็นผลลัพธ์',
+                              'Aim Trainer: ยิงเป้าเป็นเวลา 10 วินาที • ใช้ค่าคะแนนสูงสุดเป็นผลลัพธ์',
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(top: 2),
+                            child: Icon(
+                              Icons.color_lens_rounded,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Color Wheel Reflex: กดสีที่ขึ้นมาให้ตรงกับลูกศรในเวลา 30 วิ',
                             ),
                           ),
                         ],

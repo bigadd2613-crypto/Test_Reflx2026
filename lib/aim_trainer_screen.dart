@@ -41,7 +41,7 @@ class AimTrainerScreen extends StatefulWidget {
 // State ที่ควบคุมกติกา การจับเวลา และการแสดงผลของ Aim Trainer
 class _AimTrainerScreenState extends State<AimTrainerScreen> {
   // ระยะเวลาสูงสุดของหนึ่งรอบเกม
-  static const _gameDuration = Duration(seconds: 30);
+  static const _gameDuration = Duration(seconds: 10);
   // ระยะเวลาที่เป้าหนึ่งเป้าจะแสดงก่อนนับเป็นพลาด
   static const _targetLifespan = Duration(milliseconds: 1200);
 
@@ -101,7 +101,7 @@ class _AimTrainerScreenState extends State<AimTrainerScreen> {
     });
     // สร้างเป้าแรกทันทีหลังเริ่มเกม
     _spawnTarget();
-    // ตรวจเวลารวมของเกมเป็นระยะและจบรอบเมื่อครบ 30 วินาที
+    // ตรวจเวลารวมของเกมเป็นระยะและจบรอบเมื่อครบ 10 วินาที
     _gameTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
       // ถ้าหน้าถูกปิดหรือไม่มีเวลาเริ่มเกมแล้ว ให้หยุดการประมวลผลรอบนี้
       if (!mounted || _startedAt == null) return;
