@@ -190,7 +190,10 @@ class _ColorWheelReflexScreenState extends State<ColorWheelReflexScreen>
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 560),
                   child: _gameState == ColorWheelGameState.gameOver
@@ -219,13 +222,13 @@ class _ColorWheelReflexScreenState extends State<ColorWheelReflexScreen>
           _HudValue(label: 'ด่าน', value: '$_stage'),
         ],
       ),
-      const SizedBox(height: 28),
+      const SizedBox(height: 14),
       LayoutBuilder(
         builder: (context, constraints) {
-          final diameter = min(320.0, constraints.maxWidth);
+          final diameter = min(300.0, constraints.maxWidth);
           return SizedBox(
             width: diameter,
-            height: diameter + 22,
+            height: diameter + 12,
             child: Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.topCenter,
@@ -262,7 +265,7 @@ class _ColorWheelReflexScreenState extends State<ColorWheelReflexScreen>
           );
         },
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 10),
       if (_gameState == ColorWheelGameState.idle)
         SizedBox(
           width: double.infinity,
@@ -285,7 +288,7 @@ class _ColorWheelReflexScreenState extends State<ColorWheelReflexScreen>
             ),
           ),
         ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 10),
       Text(
         _statusMessage,
         textAlign: TextAlign.center,
@@ -297,7 +300,7 @@ class _ColorWheelReflexScreenState extends State<ColorWheelReflexScreen>
               : Colors.white,
         ),
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: 6),
       Text(
         _gameState == ColorWheelGameState.activeReaction
             ? 'กดปุ่มหยุดหรือ Spacebar เพื่อตรวจสอบสีที่ลูกศรชี้'
